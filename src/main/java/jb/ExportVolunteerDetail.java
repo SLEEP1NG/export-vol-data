@@ -44,6 +44,9 @@ public class ExportVolunteerDetail {
 		String roleResumePoint = (args.length == 3) ? "" : args[3];
 
 		Path path = Paths.get("volunteerDetail.csv");
+		if (! Files.exists(path)) {
+			Files.createFile(path);
+		}
 		List<String> volunteersProcessedInPriorRun = Files.lines(path).map(r -> r.split(",")[0])
 				.collect(Collectors.toList());
 
@@ -103,6 +106,7 @@ public class ExportVolunteerDetail {
 	 */
 	private void setVolunteerInfoForUnassigned() {
 		String roleUrl = roleNameToUrl.values().iterator().next();
+		System.out.println(roleUrl + " for unassigned volunteers");
 		driver.get(roleUrl);
 
 		driver.findElement(By.id("UnassignedTab")).click();
