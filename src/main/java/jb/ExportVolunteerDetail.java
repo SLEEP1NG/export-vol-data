@@ -22,7 +22,7 @@ import org.openqa.selenium.support.ui.*;
  * @author Jeanne
  *
  */
-public class ExportVolunteerDetail {
+public class ExportVolunteerDetail implements AutoCloseable {
 
 	private WebDriver driver;
 	private CSVPrinter printer;
@@ -50,20 +50,14 @@ public class ExportVolunteerDetail {
 		List<String> volunteersProcessedInPriorRun = Files.lines(path).map(r -> r.split(",")[0])
 				.collect(Collectors.toList());
 
-		ExportVolunteerDetail detail = null;
 		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND);
-				CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
-
-			detail = new ExportVolunteerDetail(printer, volunteersProcessedInPriorRun);
+				CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
+				ExportVolunteerDetail detail = new ExportVolunteerDetail(printer, volunteersProcessedInPriorRun)) {
 
 			detail.login(args[0], args[1]);
 			detail.setRoles(args[2]);
 			detail.setVolunteerInfoForAllRoles(roleResumePoint);
 			detail.setVolunteerInfoForUnassigned();
-		} finally {
-			if (detail != null) {
-				detail.close();
-			}
 		}
 	}
 
@@ -190,7 +184,8 @@ public class ExportVolunteerDetail {
 		return driver.findElement(By.id(id));
 	}
 
-	private void close() {
+	@Override
+	public void close() {
 		driver.close();
 	}
 
