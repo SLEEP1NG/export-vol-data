@@ -1,6 +1,7 @@
 package jb;
 
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * The fields we want to include in the CSV file. (Some of these are in the
@@ -18,7 +19,7 @@ public class VolunteerDetail {
 	private String firstExperienceDescription;
 	private String rolePreferenceComment;
 
-	static enum PersonalDetailFieldNameEnum {
+	enum PersonalDetailFieldNameEnum {
 		AGE, YEARS_OF_SERVICE, GENDER, OTHER_LABEL, NO_LABEL;
 		public static PersonalDetailFieldNameEnum getEnumForLabelPrefix(String prefix) {
 			PersonalDetailFieldNameEnum result;
@@ -28,14 +29,17 @@ public class VolunteerDetail {
 				result = YEARS_OF_SERVICE;
 			} else if (prefix.startsWith("Gender:")) {
 				result = GENDER;
-			} else if (prefix.startsWith("Phone Number:") || prefix.startsWith("Email:")
-					|| prefix.startsWith("Contact Name:") || prefix.startsWith("Phone:") || prefix.startsWith("Shirt:")
-					|| prefix.startsWith("Address:")) {
+			} else if (isIgnoredLabel(prefix)) {
 				result = OTHER_LABEL;
 			} else {
 				result = NO_LABEL;
 			}
 			return result;
+		}
+
+		private static boolean isIgnoredLabel(String prefix) {
+			return Stream.of("Phone Number:", "Email:", "Contact Name:", "Phone:",
+					"Shirt:", "Address:").anyMatch(prefix::startsWith);
 		}
 	}
 
@@ -90,8 +94,6 @@ public class VolunteerDetail {
 			gender = value;
 			break;
 		case NO_LABEL:
-			// intentionally set nothing
-			break;
 		case OTHER_LABEL:
 			// intentionally set nothing
 			break;

@@ -44,7 +44,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		String roleResumePoint = (args.length == 3) ? "" : args[3];
 
 		Path path = Paths.get("volunteerDetail.csv");
-		if (! Files.exists(path)) {
+		if (! path.toFile().exists()) {
 			Files.createFile(path);
 		}
 		List<String> volunteersProcessedInPriorRun = Files.lines(path).map(r -> r.split(",")[0])
@@ -65,7 +65,11 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 	private ExportVolunteerDetail(CSVPrinter printer, Collection<String> volunteersProcessedInPriorRun) {
 		this.printer = printer;
+		
+		Path gecko = Paths.get("geckodriver-0.15.0/geckodriver");
+		System.setProperty("webdriver.gecko.driver", gecko.toAbsolutePath().toString());
 		driver = new FirefoxDriver();
+		
 		processedVolunteerNames = new HashSet<>(volunteersProcessedInPriorRun);
 
 		// this doesn't work - get prompts on every page in Firefox
@@ -145,7 +149,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 			System.out.println("Processing " + name);
 
-			List<String> personalDetails = personalComments.stream().map(e -> e.getText()).collect(Collectors.toList());
+			List<String> personalDetails = personalComments.stream().map(WebElement::getText).collect(Collectors.toList());
 
 			VolunteerDetail detail = new VolunteerDetail(name, commentText, personalDetails);
 			printOneRecord(detail);
@@ -170,11 +174,9 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		WebElement table = getElementByIdAfterTimeout(tableId);
 		List<WebElement> volunteers = table.findElements(By.cssSelector("a[href*=People]"));
 
-		List<String> urls = volunteers.stream().filter(e -> !processedVolunteerNames.contains(e.getText()))
-				.filter(new DistinctByKey<WebElement, String>(WebElement::getText)::filter)
+		return volunteers.stream().filter(e -> !processedVolunteerNames.contains(e.getText()))
+				.filter(new DistinctByKey<>(WebElement::getText)::filter)
 				.map(e -> e.getAttribute("href")).collect(Collectors.toList());
-
-		return urls;
 	}
 
 	private WebElement getElementByIdAfterTimeout(String id) {
