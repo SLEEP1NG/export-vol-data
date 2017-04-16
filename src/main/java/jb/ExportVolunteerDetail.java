@@ -150,6 +150,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 				VolunteerDetail detail;
 				// used cached volunteer info if have already looked it up
 				if (optional.isPresent()) {
+					System.out.println("Using cached info volunteer details for: " + volunteerName);
 					detail = optional.get();
 				} else {
 					detail = getVolunteerDetail(includeRoleAssignment, volunteerPair);
