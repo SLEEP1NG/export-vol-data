@@ -6,8 +6,6 @@ import java.util.*;
 
 import org.junit.*;
 
-import jb.model.*;
-
 public class VolunteerDetailTest {
 
 	private Object[] actual;
@@ -15,15 +13,15 @@ public class VolunteerDetailTest {
 	@Test
 	public void name() {
 		VolunteerDetail detail = new VolunteerDetail("name", null, new ArrayList<String>());
-		actual = detail.getAsArray();
-		assertArrayForCsv("name", "", "", "", "", "");
+		actual = detail.getAsArray("event", "role");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "");
 	}
 
 	@Test
 	public void nameAndRolePreferenceComment() {
 		VolunteerDetail detail = new VolunteerDetail("name", "role", new ArrayList<String>());
-		actual = detail.getAsArray();
-		assertArrayForCsv("name", "", "", "", "", "role");
+		actual = detail.getAsArray("event", "role");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "role");
 	}
 
 	@Test
@@ -34,9 +32,35 @@ public class VolunteerDetailTest {
 				"cert pass");
 
 		VolunteerDetail detail = new VolunteerDetail("name", "role", personalInfo);
-		actual = detail.getAsArray();
-		assertArrayForCsv("name", "34", "10", "Male", "My FIRST experience", "role");
+		actual = detail.getAsArray("event", "role");
+		assertArrayForCsv("event", "role", "name", "34", "10", "Male", "My FIRST experience", "role");
 	}
+
+	// ---------------------------------------------------
+
+	@Test
+	public void createFromArrayByNameOnly() {
+		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name");
+		actual = detailFromArray.getAsArray("event", "role");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "");
+	}
+
+	@Test
+	public void createFromArrayWithRolePreference() {
+		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name", "", "", "", "", "role");
+		actual = detailFromArray.getAsArray("event", "role");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "role");
+	}
+
+	@Test
+	public void createFromArrayWithPersonalInfoAndQuotes() {
+		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name", "34", "10", "Male",
+				"\"My FIRST Experience\"", "role");
+		actual = detailFromArray.getAsArray("event", "role");
+		assertArrayForCsv("event", "role", "name", "34", "10", "Male", "My FIRST Experience", "role");
+	}
+
+	// ---------------------------------------------------
 
 	private void assertArrayForCsv(String... expected) {
 		assertArrayEquals(expected, actual);

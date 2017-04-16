@@ -9,7 +9,7 @@ import java.util.function.*;
  * http://stackoverflow.com/questions/27870136/java-lambda-stream-distinct-on-
  * arbitrary-key
  * 
- * @author nyjeanne
+ * @author Jeanne
  *
  * @param <T>
  * @param <K>

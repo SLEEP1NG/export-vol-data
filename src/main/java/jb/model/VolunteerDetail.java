@@ -7,13 +7,13 @@ import java.util.stream.*;
  * The fields we want to include in the CSV file. (Some of these are in the
  * FIRST export and are included for cross checking)
  * 
- * @author nyjeanne
+ * @author Jeanne
  *
  */
 public class VolunteerDetail {
 
 	private String name;
-	private String age;
+		private String age;
 	private String yearsOfService;
 	private String gender;
 	private String firstExperienceDescription;
@@ -42,12 +42,23 @@ public class VolunteerDetail {
 					"Shirt:", "Address:").anyMatch(prefix::startsWith);
 		}
 	}
-
+	
 	public VolunteerDetail(String name, String rolePreferenceComment, List<String> personalDetails) {
 		this.name = name;
 		this.rolePreferenceComment = rolePreferenceComment;
 
 		setPersonalInfo(personalDetails);
+	}
+	
+	public VolunteerDetail(String name, String age, String yearsOfService, String gender,
+			String firstExperienceDescription, String rolePreferenceComment) {
+		super();
+		this.name = name;
+		this.age = age;
+		this.yearsOfService = yearsOfService;
+		this.gender = gender;
+		this.firstExperienceDescription = firstExperienceDescription;
+		this.rolePreferenceComment = rolePreferenceComment;
 	}
 
 	/**
@@ -102,7 +113,7 @@ public class VolunteerDetail {
 		}
 	}
 
-	public Object[] getAsArray(String eventName, String roleName) {
+	public String[] getAsArray(String eventName, String roleName) {
 		List<String> result = new ArrayList<>();
 		result.add(eventName);
 		result.add(roleName);
@@ -112,11 +123,33 @@ public class VolunteerDetail {
 		result.add(nullSafe(gender));
 		result.add(nullSafe(firstExperienceDescription));
 		result.add(nullSafe(rolePreferenceComment));
-		return result.toArray();
+		return result.toArray(new String[0]);
+	}
+	
+	public static VolunteerDetail createFromCsvArray(String... fields) {
+		String name = getField(fields, 0);
+		String age = getField(fields, 1);
+		String yearsOfService = getField(fields, 2);
+		String gender = getField(fields, 3);
+		String firstExperienceDescription = getField(fields, 4);
+		String rolePreferenceComment = getField(fields, 5);
+		return new VolunteerDetail(name, age, yearsOfService, gender, firstExperienceDescription, rolePreferenceComment);
+	}
+	
+	private static String getField(String[] fields, int index) {
+		if (fields.length <= index) {
+			return "";
+		}
+		String value = fields[index];
+		return value.replaceFirst("^\"", "").replaceFirst("\"$", "");
 	}
 
 	private String nullSafe(String text) {
 		return (text == null) ? "" : text;
+	}
+	
+	public String getName() {
+		return name;
 	}
 
 }

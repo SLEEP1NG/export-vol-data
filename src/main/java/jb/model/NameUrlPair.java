@@ -2,12 +2,12 @@ package jb.model;
 
 import org.openqa.selenium.*;
 
-public class Event {
+public class NameUrlPair {
 
 	private String name;
 	private String url;
 
-	public Event(WebElement webElement) {
+	public NameUrlPair(WebElement webElement) {
 		name = webElement.getText();
 		url = webElement.getAttribute("href");
 	}

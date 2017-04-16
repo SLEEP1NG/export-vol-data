@@ -1,5 +1,5 @@
-package jb;
-
+package jb.util;
+import static jb.util.Constants.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -17,8 +17,7 @@ import jb.model.*;
  */
 public class EventAndRoleTracker {
 
-	private static final String HOME_PAGE = "https://my.usfirst.org/VMS/Default.aspx";
-	private static final String STATUS_TRACKER_FILE = "resume.csv";
+	
 
 	private WebDriver driver;
 
@@ -27,14 +26,14 @@ public class EventAndRoleTracker {
 	}
 
 	// TODO add retry logic
-	public List<Event> getRemainingEvents() {
+	public List<NameUrlPair> getRemainingEvents() {
 		driver.get(HOME_PAGE);
 		WebElement eventsTable = driver.findElement(By.id("EventsTable5"));
 		List<WebElement> links = eventsTable.findElements(By.xpath("//a[contains(@href, 'EventDetails.aspx')]"));
-		return links.stream().map(Event::new).collect(Collectors.toList());
+		return links.stream().map(NameUrlPair::new).collect(Collectors.toList());
 	}
 
-	public SortedMap<String, String> getRemainingRolesForEventByUrl(Event event) {
+	public SortedMap<String, String> getRemainingRolesForEventByUrl(NameUrlPair event) {
 		driver.get(event.getUrl());
 
 		SortedMap<String, String> roleNameToUrl = new TreeMap<>();
