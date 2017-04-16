@@ -100,19 +100,14 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	}
 
 	private void execute(ExportVolunteerDetail detail) {
-		List<NameUrlPair> events = tracker.getEvents();
-		for (NameUrlPair event : events) {
-			if (tracker.isEventCompleted(event.getName())) {
-				System.out.println("Skipping event " + event.getName() + " because already logged");
-			} else {
-				currentEvent = event;
+		tracker.getRemainingEvents().forEach(e -> {
+				currentEvent = e;
 				detail.setRoles();
 				// TODO remove empty string param
 				detail.setVolunteerInfoForAllRoles("");
 				detail.setVolunteerInfoForUnassigned();
 				statusWriter.println("Completed logging for event: " + currentEvent.getName());
-			}
-		}
+		 });
 
 	}
 
@@ -161,7 +156,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 			// skip this record if got in previous run
 			String volunteerName = volunteerPair.getName();
 			if (volunteerFileCache.isLogged(currentEvent.getName(), roleName, volunteerName)) {
-				System.out.println("Skipping becuase already logged: " + currentEvent.getName() + ", " + roleName + ", "
+				System.out.println("Skipping because already logged: " + currentEvent.getName() + ", " + roleName + ", "
 						+ volunteerName);
 			} else {
 				Optional<VolunteerDetail> optional = volunteerFileCache.getVolunteerInfo(volunteerName);

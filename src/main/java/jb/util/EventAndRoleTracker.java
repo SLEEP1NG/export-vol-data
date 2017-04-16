@@ -42,15 +42,24 @@ public class EventAndRoleTracker {
 				.collect(Collectors.toList());
 	}
 
-	public boolean isEventCompleted(String eventName) {
-		return completedEvents.contains(eventName);
+	public boolean isEventCompleted(NameUrlPair event) {
+		String eventName = event.getName();
+		boolean result =  completedEvents.contains(eventName);
+		if (result) {
+			System.out.println("Skipping event " + eventName + " because already logged");
+		}
+		return result;
 	}
 
-	public List<NameUrlPair> getEvents() {
+	public List<NameUrlPair> getRemainingEvents() {
 		driver.get(HOME_PAGE);
 		WebElement eventsTable = driver.findElement(By.id("EventsTable5"));
 		List<WebElement> links = eventsTable.findElements(By.xpath("//a[contains(@href, 'EventDetails.aspx')]"));
-		return links.stream().map(NameUrlPair::new).collect(Collectors.toList());
+		return links.stream().map(NameUrlPair::new)
+				// remove completed events
+				.filter(e -> ! isEventCompleted(e))
+				// convert to list
+				.collect(Collectors.toList());
 	}
 
 	// TODO add retry logic
