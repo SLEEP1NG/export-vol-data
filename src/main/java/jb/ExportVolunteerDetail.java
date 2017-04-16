@@ -10,6 +10,8 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.*;
 import org.openqa.selenium.support.ui.*;
 
+import jb.model.*;
+
 /**
  * Screen scrapes info not in the export (FIRST experience field). Assumes no
  * two volunteers have the same first/last name combination. Skips any
@@ -26,25 +28,22 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 	private WebDriver driver;
 	private CSVPrinter printer;
-	private TreeMap<String, String> roleNameToUrl;
+	private SortedMap<String, String> roleNameToUrl;
 	private HashSet<String> processedVolunteerNames;
+	private EventAndRoleTracker tracker;
+	private Event currentEvent;
 
 	// -------------------------------------------------------
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 3 && args.length != 4) {
-			System.out.println(
-					"Pass three or four parameters: email, password and url of event. Optional is a role name to resume from");
-			System.out.println("ex: jb.ExportVolunteerDetail email password https://my.usfirst.org/VMS/Default.aspx");
-			System.out.println(
-					"ex: jb.ExportVolunteerDetail email password https://my.usfirst.org/VMS/Default.aspx Control System Advisor");
+		if (args.length != 2) {
+			System.out.println("Pass two parameters: email, password and url of event.");
+			System.out.println("ex: jb.ExportVolunteerDetail email password");
 			System.exit(1);
 		}
 
-		String roleResumePoint = (args.length == 3) ? "" : args[3];
-
 		Path path = Paths.get("volunteerDetail.csv");
-		if (! path.toFile().exists()) {
+		if (!path.toFile().exists()) {
 			Files.createFile(path);
 		}
 		List<String> volunteersProcessedInPriorRun = Files.lines(path).map(r -> r.split(",")[0])
@@ -55,9 +54,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 				ExportVolunteerDetail detail = new ExportVolunteerDetail(printer, volunteersProcessedInPriorRun)) {
 
 			detail.login(args[0], args[1]);
-			detail.setRoles(args[2]);
-			detail.setVolunteerInfoForAllRoles(roleResumePoint);
-			detail.setVolunteerInfoForUnassigned();
+			detail.execute(detail);
 		}
 	}
 
@@ -65,17 +62,20 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 	private ExportVolunteerDetail(CSVPrinter printer, Collection<String> volunteersProcessedInPriorRun) {
 		this.printer = printer;
-		
+
+		// the FIRST site doesn't work with the htmlunit or phatomjs drivers
 		Path gecko = Paths.get("geckodriver-0.15.0/geckodriver");
 		System.setProperty("webdriver.gecko.driver", gecko.toAbsolutePath().toString());
 		driver = new FirefoxDriver();
-		
+
 		processedVolunteerNames = new HashSet<>(volunteersProcessedInPriorRun);
 
 		// this doesn't work - get prompts on every page in Firefox
 		// (ok because code proceeds despite alerts)
 		// https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/27
 		((JavascriptExecutor) driver).executeScript("window.alert = function(msg) { }");
+
+		tracker = new EventAndRoleTracker(driver);
 
 	}
 
@@ -86,17 +86,20 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		driver.findElement(By.id("LoginButton")).click();
 	}
 
-	private void setRoles(String eventUrl) {
-		driver.get(eventUrl);
-
-		roleNameToUrl = new TreeMap<>();
-
-		// ex:
-		// https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
-		List<WebElement> roles = driver.findElements(By.cssSelector("a[href*=RoleID]"));
-		for (WebElement webElement : roles) {
-			roleNameToUrl.put(webElement.getText(), webElement.getAttribute("href"));
+	private void execute(ExportVolunteerDetail detail) {
+		List<Event> events = tracker.getRemainingEvents();
+		for (Event event : events) {
+			currentEvent = event;
+			detail.setRoles();
+			// TODO remove empty string param
+			detail.setVolunteerInfoForAllRoles("");
+			detail.setVolunteerInfoForUnassigned();
 		}
+
+	}
+
+	private void setRoles() {
+		roleNameToUrl = tracker.getRemainingRolesForEventByUrl(currentEvent);
 	}
 
 	/*
@@ -108,9 +111,10 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		driver.get(roleUrl);
 
 		driver.findElement(By.id("UnassignedTab")).click();
-		setVolunteerInfoForSingleRole("UnassignedTable", false);
+		setVolunteerInfoForSingleRole("Unassigned", "UnassignedTable", false);
 	}
 
+	//TODO remove resume point logic
 	private void setVolunteerInfoForAllRoles(String roleResumePoint) {
 
 		roleNameToUrl.forEach((roleName, url) -> {
@@ -120,12 +124,12 @@ public class ExportVolunteerDetail implements AutoCloseable {
 				System.out.println("--- Role: " + roleName + "---");
 
 				driver.get(url);
-				setVolunteerInfoForSingleRole("ScheduleTable", true);
+				setVolunteerInfoForSingleRole(roleName, "ScheduleTable", true);
 			}
 		});
 	}
 
-	private void setVolunteerInfoForSingleRole(String tableId, boolean includeRoleAssignment) {
+	private void setVolunteerInfoForSingleRole(String roleName, String tableId, boolean includeRoleAssignment) {
 		List<String> volunteerUrls = null;
 		try {
 			volunteerUrls = getNewVolunteerUrls(tableId);
@@ -149,10 +153,11 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 			System.out.println("Processing " + name);
 
-			List<String> personalDetails = personalComments.stream().map(WebElement::getText).collect(Collectors.toList());
+			List<String> personalDetails = personalComments.stream().map(WebElement::getText)
+					.collect(Collectors.toList());
 
 			VolunteerDetail detail = new VolunteerDetail(name, commentText, personalDetails);
-			printOneRecord(detail);
+			printOneRecord(roleName, detail);
 
 			processedVolunteerNames.add(name);
 
@@ -162,9 +167,9 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	/*
 	 * Convert checked exception to runtime exception so can use with lambdas
 	 */
-	private void printOneRecord(VolunteerDetail detail) {
+	private void printOneRecord(String roleName, VolunteerDetail detail) {
 		try {
-			printer.printRecord(detail.getAsArray());
+			printer.printRecord(detail.getAsArray(currentEvent.getName(), roleName));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -175,8 +180,8 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		List<WebElement> volunteers = table.findElements(By.cssSelector("a[href*=People]"));
 
 		return volunteers.stream().filter(e -> !processedVolunteerNames.contains(e.getText()))
-				.filter(new DistinctByKey<>(WebElement::getText)::filter)
-				.map(e -> e.getAttribute("href")).collect(Collectors.toList());
+				.filter(new DistinctByKey<>(WebElement::getText)::filter).map(e -> e.getAttribute("href"))
+				.collect(Collectors.toList());
 	}
 
 	private WebElement getElementByIdAfterTimeout(String id) {

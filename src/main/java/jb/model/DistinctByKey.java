@@ -1,4 +1,4 @@
-package jb;
+package jb.model;
 
 import java.util.*;
 import java.util.concurrent.*;

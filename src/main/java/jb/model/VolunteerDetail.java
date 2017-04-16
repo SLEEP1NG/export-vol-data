@@ -1,4 +1,4 @@
-package jb;
+package jb.model;
 
 import java.util.*;
 import java.util.stream.*;
@@ -102,8 +102,10 @@ public class VolunteerDetail {
 		}
 	}
 
-	public Object[] getAsArray() {
+	public Object[] getAsArray(String eventName, String roleName) {
 		List<String> result = new ArrayList<>();
+		result.add(eventName);
+		result.add(roleName);
 		result.add(nullSafe(name));
 		result.add(nullSafe(age));
 		result.add(nullSafe(yearsOfService));

@@ -1,10 +1,12 @@
-package jb;
+package jb.model;
 
 import static org.junit.Assert.*;
 
 import java.util.*;
 
 import org.junit.*;
+
+import jb.model.*;
 
 public class VolunteerDetailTest {
 
