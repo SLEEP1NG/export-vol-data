@@ -31,6 +31,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 	private WebDriver driver;
 	private CSVPrinter printer;
+	private PrintWriter statusWriter;
 	private SortedMap<String, String> roleNameToUrl;
 	private EventAndRoleTracker tracker;
 	private NameUrlPair currentEvent;
@@ -45,26 +46,37 @@ public class ExportVolunteerDetail implements AutoCloseable {
 			System.exit(1);
 		}
 
-		Path path = Paths.get(CSV_DATA);
-		if (!path.toFile().exists()) {
-			Files.createFile(path);
-		}
-		VolunteerInfoFile volunteerFileCache = new VolunteerInfoFile();
-		volunteerFileCache.loadFile(path);
+		Path csvPath = createAndGetFile(CSV_DATA);
+		Path statusPath = createAndGetFile(STATUS_TRACKER_FILE);
 
-		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND);
-				CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
-				ExportVolunteerDetail detail = new ExportVolunteerDetail(printer, volunteerFileCache)) {
+		VolunteerInfoFile volunteerFileCache = new VolunteerInfoFile();
+		volunteerFileCache.loadFile(csvPath);
+
+		try (BufferedWriter csvWriter = Files.newBufferedWriter(csvPath, StandardOpenOption.APPEND);
+				BufferedWriter statusBufWriter = Files.newBufferedWriter(statusPath, StandardOpenOption.APPEND);
+				PrintWriter statusWriter = new PrintWriter(statusBufWriter);
+				CSVPrinter printer = new CSVPrinter(csvWriter, CSVFormat.DEFAULT);
+				ExportVolunteerDetail detail = new ExportVolunteerDetail(printer, statusWriter, volunteerFileCache)) {
 
 			detail.login(args[0], args[1]);
 			detail.execute(detail);
 		}
 	}
 
+	private static Path createAndGetFile(String name) throws IOException {
+		Path path = Paths.get(name);
+		if (!path.toFile().exists()) {
+			Files.createFile(path);
+		}
+		return path;
+	}
+
 	// -------------------------------------------------------
 
-	private ExportVolunteerDetail(CSVPrinter printer, VolunteerInfoFile volunteerFileCache) {
+	private ExportVolunteerDetail(CSVPrinter printer, PrintWriter statusWriter, VolunteerInfoFile volunteerFileCache)
+			throws IOException {
 		this.printer = printer;
+		this.statusWriter = statusWriter;
 		this.volunteerFileCache = volunteerFileCache;
 
 		// the FIRST site doesn't work with the htmlunit or phantomjs drivers
@@ -78,7 +90,6 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		((JavascriptExecutor) driver).executeScript("window.alert = function(msg) { }");
 
 		tracker = new EventAndRoleTracker(driver);
-
 	}
 
 	private void login(String userName, String password) {
@@ -89,13 +100,18 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	}
 
 	private void execute(ExportVolunteerDetail detail) {
-		List<NameUrlPair> events = tracker.getRemainingEvents();
+		List<NameUrlPair> events = tracker.getEvents();
 		for (NameUrlPair event : events) {
-			currentEvent = event;
-			detail.setRoles();
-			// TODO remove empty string param
-			detail.setVolunteerInfoForAllRoles("");
-			detail.setVolunteerInfoForUnassigned();
+			if (tracker.isEventCompleted(event.getName())) {
+				System.out.println("Skipping event " + event.getName() + " because already logged");
+			} else {
+				currentEvent = event;
+				detail.setRoles();
+				// TODO remove empty string param
+				detail.setVolunteerInfoForAllRoles("");
+				detail.setVolunteerInfoForUnassigned();
+				statusWriter.println("Completed logging for event: " + currentEvent.getName());
+			}
 		}
 
 	}
@@ -128,6 +144,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 				driver.get(url);
 				setVolunteerInfoForSingleRole(roleName, "ScheduleTable", true);
 			}
+			statusWriter.println("Completed logging for event/role: " + currentEvent.getName() + "/" + roleName);
 		});
 	}
 
@@ -144,8 +161,9 @@ public class ExportVolunteerDetail implements AutoCloseable {
 			// skip this record if got in previous run
 			String volunteerName = volunteerPair.getName();
 			if (volunteerFileCache.isLogged(currentEvent.getName(), roleName, volunteerName)) {
-				System.out.println("Skipping becuase already logged: " + currentEvent.getName() + ", " + roleName + ", " + volunteerName);
-			} else {	
+				System.out.println("Skipping becuase already logged: " + currentEvent.getName() + ", " + roleName + ", "
+						+ volunteerName);
+			} else {
 				Optional<VolunteerDetail> optional = volunteerFileCache.getVolunteerInfo(volunteerName);
 				VolunteerDetail detail;
 				// used cached volunteer info if have already looked it up

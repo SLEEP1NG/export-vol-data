@@ -1,5 +1,9 @@
 package jb.util;
+
 import static jb.util.Constants.*;
+
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -17,22 +21,39 @@ import jb.model.*;
  */
 public class EventAndRoleTracker {
 
-	
-
 	private WebDriver driver;
+	private List<String> completedEvents;
 
-	public EventAndRoleTracker(WebDriver driver) {
+	public EventAndRoleTracker(WebDriver driver) throws IOException {
 		this.driver = driver;
+		Path path = Paths.get(STATUS_TRACKER_FILE);
+		List<String> lines = Files.readAllLines(path);
+		setCompletedEvents(lines);
 	}
 
-	// TODO add retry logic
-	public List<NameUrlPair> getRemainingEvents() {
+	private void setCompletedEvents(List<String> lines) {
+		String prefix = "Completed logging for event: ";
+		completedEvents = lines.stream()
+				// get events
+				.filter(l -> l.startsWith(prefix))
+				// get just the event name
+				.map(l -> l.replace(prefix, ""))
+				// and turn back into list
+				.collect(Collectors.toList());
+	}
+
+	public boolean isEventCompleted(String eventName) {
+		return completedEvents.contains(eventName);
+	}
+
+	public List<NameUrlPair> getEvents() {
 		driver.get(HOME_PAGE);
 		WebElement eventsTable = driver.findElement(By.id("EventsTable5"));
 		List<WebElement> links = eventsTable.findElements(By.xpath("//a[contains(@href, 'EventDetails.aspx')]"));
 		return links.stream().map(NameUrlPair::new).collect(Collectors.toList());
 	}
 
+	// TODO add retry logic
 	public SortedMap<String, String> getRemainingRolesForEventByUrl(NameUrlPair event) {
 		driver.get(event.getUrl());
 
