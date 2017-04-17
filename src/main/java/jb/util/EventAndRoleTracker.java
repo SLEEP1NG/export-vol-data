@@ -82,6 +82,8 @@ public class EventAndRoleTracker {
 		return links.stream().map(NameUrlPair::new)
 				// remove completed events
 				.filter(e -> !isEventCompleted(e))
+				// sort
+				.sorted()
 				// convert to list
 				.collect(Collectors.toList());
 	}
@@ -95,6 +97,8 @@ public class EventAndRoleTracker {
 		List<NameUrlPair> result = roles.stream().map(NameUrlPair::new)
 				// remove completed
 				.filter(r -> !isEventRoleCompleted(event, r.getName()))
+				// sort
+				.sorted((a, b) -> a.getName().compareTo(b.getName()))
 				// convert to list
 				.collect(Collectors.toList());
 		// remove "Hidden" text from role name
