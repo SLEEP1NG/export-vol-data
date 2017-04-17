@@ -19,6 +19,8 @@ import jb.model.*;
  * @author Jeanne
  *
  */
+// printlns ok because a command line program 
+@SuppressWarnings("squid:S106")
 public class EventAndRoleTracker {
 
 	private WebDriver driver;
@@ -90,11 +92,14 @@ public class EventAndRoleTracker {
 		// ex:
 		// https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
 		List<WebElement> roles = driver.findElements(By.cssSelector("a[href*=RoleID]"));
-		return roles.stream().map(NameUrlPair::new)
+		List<NameUrlPair> result = roles.stream().map(NameUrlPair::new)
 				// remove completed
 				.filter(r -> !isEventRoleCompleted(event, r.getName()))
 				// convert to list
 				.collect(Collectors.toList());
+		// remove "Hidden" text from role name
+		result.forEach(r -> r.setName(r.getName().replaceFirst("\\(Hidden\\)", "")));
+		return result;
 	}
 
 }

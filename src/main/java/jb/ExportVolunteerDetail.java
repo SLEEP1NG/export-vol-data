@@ -27,6 +27,9 @@ import jb.util.*;
  * @author Jeanne
  *
  */
+
+// printlns ok because a command line program 
+@SuppressWarnings("squid:S106")
 public class ExportVolunteerDetail implements AutoCloseable {
 
 	private WebDriver driver;
