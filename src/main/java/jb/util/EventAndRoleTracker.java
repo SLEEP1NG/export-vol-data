@@ -23,12 +23,14 @@ public class EventAndRoleTracker {
 
 	private WebDriver driver;
 	private List<String> completedEvents;
+	private List<String> completedEventRolePairs;
 
 	public EventAndRoleTracker(WebDriver driver) throws IOException {
 		this.driver = driver;
 		Path path = Paths.get(STATUS_TRACKER_FILE);
 		List<String> lines = Files.readAllLines(path);
 		setCompletedEvents(lines);
+		setCompletedEventRolePairs(lines);
 	}
 
 	private void setCompletedEvents(List<String> lines) {
@@ -42,11 +44,31 @@ public class EventAndRoleTracker {
 				.collect(Collectors.toList());
 	}
 
+	private void setCompletedEventRolePairs(List<String> lines) {
+		String prefix = "Completed logging for event/role: ";
+		completedEventRolePairs = lines.stream()
+				// get events
+				.filter(l -> l.startsWith(prefix))
+				// get just the event name
+				.map(l -> l.replace(prefix, ""))
+				// and turn back into list
+				.collect(Collectors.toList());
+	}
+
 	public boolean isEventCompleted(NameUrlPair event) {
 		String eventName = event.getName();
-		boolean result =  completedEvents.contains(eventName);
+		boolean result = completedEvents.contains(eventName);
 		if (result) {
 			System.out.println("Skipping event " + eventName + " because already logged");
+		}
+		return result;
+	}
+
+	public boolean isEventRoleCompleted(NameUrlPair event, String roleName) {
+		String eventName = event.getName();
+		boolean result = completedEventRolePairs.contains(eventName + "/" + roleName);
+		if (result) {
+			System.out.println("Skipping event/role " + eventName + "/" + roleName + " because already logged");
 		}
 		return result;
 	}
@@ -57,24 +79,22 @@ public class EventAndRoleTracker {
 		List<WebElement> links = eventsTable.findElements(By.xpath("//a[contains(@href, 'EventDetails.aspx')]"));
 		return links.stream().map(NameUrlPair::new)
 				// remove completed events
-				.filter(e -> ! isEventCompleted(e))
+				.filter(e -> !isEventCompleted(e))
 				// convert to list
 				.collect(Collectors.toList());
 	}
 
-	// TODO add retry logic
-	public SortedMap<String, String> getRemainingRolesForEventByUrl(NameUrlPair event) {
+	public List<NameUrlPair> getRemainingRolesForEventByUrl(NameUrlPair event) {
 		driver.get(event.getUrl());
-
-		SortedMap<String, String> roleNameToUrl = new TreeMap<>();
 
 		// ex:
 		// https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
 		List<WebElement> roles = driver.findElements(By.cssSelector("a[href*=RoleID]"));
-		for (WebElement webElement : roles) {
-			roleNameToUrl.put(webElement.getText(), webElement.getAttribute("href"));
-		}
-		return roleNameToUrl;
+		return roles.stream().map(NameUrlPair::new)
+				// remove completed
+				.filter(r -> !isEventRoleCompleted(event, r.getName()))
+				// convert to list
+				.collect(Collectors.toList());
 	}
 
 }

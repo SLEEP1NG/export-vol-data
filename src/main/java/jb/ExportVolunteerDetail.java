@@ -32,7 +32,6 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	private WebDriver driver;
 	private CSVPrinter printer;
 	private PrintWriter statusWriter;
-	private SortedMap<String, String> roleNameToUrl;
 	private EventAndRoleTracker tracker;
 	private NameUrlPair currentEvent;
 	private VolunteerInfoFile volunteerFileCache;
@@ -101,45 +100,37 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 	private void execute(ExportVolunteerDetail detail) {
 		tracker.getRemainingEvents().forEach(e -> {
-				currentEvent = e;
-				detail.setRoles();
-				// TODO remove empty string param
-				detail.setVolunteerInfoForAllRoles("");
-				detail.setVolunteerInfoForUnassigned();
-				statusWriter.println("Completed logging for event: " + currentEvent.getName());
-		 });
+			currentEvent = e;
+			detail.setVolunteerInfoForAllRoles();
+			detail.setVolunteerInfoForUnassigned();
+			statusWriter.println("Completed logging for event: " + currentEvent.getName());
+		});
 
-	}
-
-	private void setRoles() {
-		roleNameToUrl = tracker.getRemainingRolesForEventByUrl(currentEvent);
 	}
 
 	/*
 	 * Can get unassigned applicants from any role so just pick one at random
 	 */
 	private void setVolunteerInfoForUnassigned() {
-		String roleUrl = roleNameToUrl.values().iterator().next();
-		System.out.println(roleUrl + " for unassigned volunteers");
-		driver.get(roleUrl);
+		List<NameUrlPair> roleNameToUrl = tracker.getRemainingRolesForEventByUrl(currentEvent);
+		NameUrlPair roleUrl = roleNameToUrl.iterator().next();
+		System.out.println(roleUrl.getName() + " for unassigned volunteers");
+		driver.get(roleUrl.getUrl());
 
 		driver.findElement(By.id("UnassignedTab")).click();
 		setVolunteerInfoForSingleRole("Unassigned", "UnassignedTable", false);
 	}
 
-	// TODO remove resume point logic
-	private void setVolunteerInfoForAllRoles(String roleResumePoint) {
+	private void setVolunteerInfoForAllRoles() {
+		List<NameUrlPair> roleNameToUrl = tracker.getRemainingRolesForEventByUrl(currentEvent);
+		roleNameToUrl.forEach(p -> {
 
-		roleNameToUrl.forEach((roleName, url) -> {
+			System.out.println("--- Role: " + p.getName() + "---");
 
-			if (roleName.compareTo(roleResumePoint) >= 0) {
+			driver.get(p.getUrl());
+			setVolunteerInfoForSingleRole(p.getName(), "ScheduleTable", true);
 
-				System.out.println("--- Role: " + roleName + "---");
-
-				driver.get(url);
-				setVolunteerInfoForSingleRole(roleName, "ScheduleTable", true);
-			}
-			statusWriter.println("Completed logging for event/role: " + currentEvent.getName() + "/" + roleName);
+			statusWriter.println("Completed logging for event/role: " + currentEvent.getName() + "/" + p.getName());
 		});
 	}
 
