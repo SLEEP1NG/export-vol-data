@@ -41,7 +41,7 @@ public class EventAndRoleTracker {
 				// get events
 				.filter(l -> l.startsWith(prefix))
 				// get just the event name
-				.map(l -> l.replace(prefix, ""))
+				.map(l -> l.replace(prefix, "").trim())
 				// and turn back into list
 				.collect(Collectors.toList());
 	}
@@ -52,7 +52,7 @@ public class EventAndRoleTracker {
 				// get events
 				.filter(l -> l.startsWith(prefix))
 				// get just the event name
-				.map(l -> l.replace(prefix, ""))
+				.map(l -> l.replace(prefix, "").trim())
 				// and turn back into list
 				.collect(Collectors.toList());
 	}
@@ -101,6 +101,15 @@ public class EventAndRoleTracker {
 				.sorted((a, b) -> a.getName().compareTo(b.getName()))
 				// convert to list
 				.collect(Collectors.toList());
+	}
+	
+	public NameUrlPair getAnyRoleForEventByUrl(NameUrlPair event) {
+		driver.get(event.getUrl());
+
+		// ex:
+		// https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
+		List<WebElement> roles = driver.findElements(By.cssSelector("a[href*=RoleID]"));
+		return roles.stream().map(NameUrlPair::new).findAny().orElseThrow(RuntimeException::new);
 	}
 
 }

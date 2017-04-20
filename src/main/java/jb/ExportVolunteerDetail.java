@@ -28,7 +28,7 @@ import jb.util.*;
  *
  */
 
-// printlns ok because a command line program 
+// printlns ok because a command line program
 @SuppressWarnings("squid:S106")
 public class ExportVolunteerDetail implements AutoCloseable {
 
@@ -115,11 +115,20 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	 * Can get unassigned applicants from any role so just pick one at random
 	 */
 	private void setVolunteerInfoForUnassigned() {
-		List<NameUrlPair> roleNameToUrl = tracker.getRemainingRolesForEventByUrl(currentEvent);
-		NameUrlPair roleUrl = roleNameToUrl.iterator().next();
+		NameUrlPair roleUrl = tracker.getAnyRoleForEventByUrl(currentEvent);
 		System.out.println(roleUrl.getName() + " for unassigned volunteers");
 		driver.get(roleUrl.getUrl());
 
+		try {
+			getUnassigned();
+		} catch (RuntimeException e) {
+			System.out.println("Retrying unassigned due to: " + e.getMessage());
+			getUnassigned();
+		}
+
+	}
+
+	private void getUnassigned() {
 		driver.findElement(By.id("UnassignedTab")).click();
 		setVolunteerInfoForSingleRole("Unassigned", "UnassignedTable", false);
 	}
@@ -160,12 +169,24 @@ public class ExportVolunteerDetail implements AutoCloseable {
 					System.out.println("Using cached info volunteer details for: " + volunteerName);
 					detail = optional.get();
 				} else {
-					detail = getVolunteerDetail(includeRoleAssignment, volunteerPair);
+					detail = getVolunteerDetailWithRetry(includeRoleAssignment, volunteerPair);
 				}
 
 				printOneRecord(roleName, detail);
 			}
 		}
+	}
+
+	// this is where the program most fails so added a retry
+	private VolunteerDetail getVolunteerDetailWithRetry(boolean includeRoleAssignment, NameUrlPair volunteerPair) {
+		VolunteerDetail result;
+		try {
+			result = getVolunteerDetail(includeRoleAssignment, volunteerPair);
+		} catch (org.openqa.selenium.NoSuchElementException e) {
+			System.out.println("NoSuchElementException " + e + " - retrying");
+			result = getVolunteerDetail(includeRoleAssignment, volunteerPair);
+		}
+		return result;
 	}
 
 	private VolunteerDetail getVolunteerDetail(boolean includeRoleAssignment, NameUrlPair volunteerPair) {

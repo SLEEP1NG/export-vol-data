@@ -8,7 +8,7 @@ public class NameUrlPair {
 	private String url;
 
 	public NameUrlPair(WebElement webElement) {
-		name = webElement.getText().replace("(Hidden)", "");
+		name = webElement.getText().replace("(Hidden)", "").trim();
 		url = webElement.getAttribute("href");
 	}
 
