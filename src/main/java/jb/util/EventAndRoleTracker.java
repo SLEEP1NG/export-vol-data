@@ -94,16 +94,13 @@ public class EventAndRoleTracker {
 		// ex:
 		// https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
 		List<WebElement> roles = driver.findElements(By.cssSelector("a[href*=RoleID]"));
-		List<NameUrlPair> result = roles.stream().map(NameUrlPair::new)
+		return roles.stream().map(NameUrlPair::new)
 				// remove completed
 				.filter(r -> !isEventRoleCompleted(event, r.getName()))
 				// sort
 				.sorted((a, b) -> a.getName().compareTo(b.getName()))
 				// convert to list
 				.collect(Collectors.toList());
-		// remove "Hidden" text from role name
-		result.forEach(r -> r.setName(r.getName().replaceFirst("\\(Hidden\\)", "")));
-		return result;
 	}
 
 }
