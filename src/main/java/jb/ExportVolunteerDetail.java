@@ -9,6 +9,7 @@ import java.util.stream.*;
 
 import org.apache.commons.csv.*;
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.firefox.*;
 import org.openqa.selenium.support.ui.*;
 
@@ -119,18 +120,18 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		System.out.println(roleUrl.getName() + " for unassigned volunteers");
 		driver.get(roleUrl.getUrl());
 
-		try {
+		//TODO didn't work consistently, but only a few applicants so not worth troubleshooting
+		/*try {
 			getUnassigned();
-		} catch (RuntimeException e) {
+		} catch (NoSuchElementException e) {
 			System.out.println("Retrying unassigned due to: " + e.getMessage());
 			getUnassigned();
 		}
-
 	}
 
 	private void getUnassigned() {
 		driver.findElement(By.id("UnassignedTab")).click();
-		setVolunteerInfoForSingleRole("Unassigned", "UnassignedTable", false);
+		setVolunteerInfoForSingleRole("Unassigned", "UnassignedTable", false);*/
 	}
 
 	private void setVolunteerInfoForAllRoles() {
