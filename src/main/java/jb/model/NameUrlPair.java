@@ -2,7 +2,7 @@ package jb.model;
 
 import org.openqa.selenium.*;
 
-public class NameUrlPair {
+public class NameUrlPair implements Comparable<NameUrlPair> {
 
 	private String name;
 	private String url;
@@ -26,6 +26,11 @@ public class NameUrlPair {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	@Override
+	public int compareTo(NameUrlPair n) {
+		return name.compareTo(n.name);
 	}
 
 }
