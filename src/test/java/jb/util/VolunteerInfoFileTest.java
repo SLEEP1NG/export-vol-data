@@ -1,10 +1,10 @@
 package jb.util;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
 import jb.model.*;
 
@@ -12,7 +12,7 @@ public class VolunteerInfoFileTest {
 
 	private VolunteerInfoFile target;
 
-	@Before
+	@BeforeEach
 	public void setUpData() {
 		target = new VolunteerInfoFile();
 		List<String> lines = new ArrayList<>();
