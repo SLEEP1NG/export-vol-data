@@ -90,17 +90,22 @@ public class EventAndRoleTracker {
 
 	public List<NameUrlPair> getRemainingRolesForEventByUrl(NameUrlPair event) {
 		driver.get(event.getUrl());
-
-		// ex:
-		// https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
-		List<WebElement> roles = driver.findElements(By.cssSelector("a[href*=RoleID]"));
-		return roles.stream().map(NameUrlPair::new)
-				// remove completed
-				.filter(r -> !isEventRoleCompleted(event, r.getName()))
+		
+		// there are separate tables for key and non-key roles
+		List<WebElement> roleTables = driver.findElements(By.className("EventRoleTable"));
+		return roleTables.stream().flatMap(row -> getRemainingRolesForTableInEvent(event, row))
 				// sort
 				.sorted((a, b) -> a.getName().compareTo(b.getName()))
-				// convert to list
+				// turn back into list
 				.collect(Collectors.toList());
+	}
+	
+	private Stream<NameUrlPair> getRemainingRolesForTableInEvent(NameUrlPair event, WebElement row) {
+		// ex: https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
+		List<WebElement> roles = row.findElements(By.cssSelector("a[href*=RoleID]"));
+		return roles.stream().map(NameUrlPair::new)
+				// remove completed
+				.filter(r -> !isEventRoleCompleted(event, r.getName()));
 	}
 	
 	public NameUrlPair getAnyRoleForEventByUrl(NameUrlPair event) {
