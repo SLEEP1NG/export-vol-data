@@ -44,7 +44,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
-			System.out.println("Pass two parameters: email, password and url of event.");
+			System.out.println("Pass two parameters: email and password");
 			System.out.println("ex: jb.ExportVolunteerDetail email password");
 			System.exit(1);
 		}
