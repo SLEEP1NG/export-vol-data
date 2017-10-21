@@ -76,9 +76,9 @@ public class EventAndRoleTracker {
 	}
 
 	public List<NameUrlPair> getRemainingEvents() {
-		driver.get(HOME_PAGE);
-		WebElement eventsTable = driver.findElement(By.id("EventsTable9"));
-		List<WebElement> links = eventsTable.findElements(By.xpath("//a[contains(@href, 'EventDetails.aspx')]"));
+		// Match URls of format: https://my.usfirst.org/VMS/Events/EventDetails.aspx?ID=27887
+		List<WebElement> links = driver.findElements(By.cssSelector("a[href*='Events']"));
+		System.out.println("# events: " + links.size());
 		return links.stream().map(NameUrlPair::new)
 				// remove completed events
 				.filter(e -> !isEventCompleted(e))

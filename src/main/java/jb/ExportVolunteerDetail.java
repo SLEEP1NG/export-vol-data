@@ -54,6 +54,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 		VolunteerInfoFile volunteerFileCache = new VolunteerInfoFile();
 		volunteerFileCache.loadFile(csvPath);
+		long startTime = System.currentTimeMillis();
 
 		try (BufferedWriter csvWriter = Files.newBufferedWriter(csvPath, StandardOpenOption.APPEND);
 				BufferedWriter statusBufWriter = Files.newBufferedWriter(statusPath, StandardOpenOption.APPEND);
@@ -63,6 +64,10 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 			detail.login(args[0], args[1]);
 			detail.execute(detail);
+		} finally {
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			System.out.println("Done. This took " + (duration / 1000) + " seconds to run");
 		}
 	}
 
@@ -83,7 +88,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		this.volunteerFileCache = volunteerFileCache;
 
 		// the FIRST site doesn't work with the htmlunit or phantomjs drivers
-		Path gecko = Paths.get("geckodriver-0.15.0/geckodriver");
+		Path gecko = Paths.get("geckodriver-0.19.0/geckodriver");
 		System.setProperty("webdriver.gecko.driver", gecko.toAbsolutePath().toString());
 		driver = new FirefoxDriver();
 
@@ -120,18 +125,17 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		System.out.println(roleUrl.getName() + " for unassigned volunteers");
 		driver.get(roleUrl.getUrl());
 
-		//TODO didn't work consistently, but only a few applicants so not worth troubleshooting
-		/*try {
-			getUnassigned();
-		} catch (NoSuchElementException e) {
-			System.out.println("Retrying unassigned due to: " + e.getMessage());
-			getUnassigned();
-		}
-	}
-
-	private void getUnassigned() {
-		driver.findElement(By.id("UnassignedTab")).click();
-		setVolunteerInfoForSingleRole("Unassigned", "UnassignedTable", false);*/
+		// TODO didn't work consistently, but only a few applicants so not worth
+		// troubleshooting
+		/*
+		 * try { getUnassigned(); } catch (NoSuchElementException e) {
+		 * System.out.println("Retrying unassigned due to: " + e.getMessage());
+		 * getUnassigned(); } }
+		 * 
+		 * private void getUnassigned() {
+		 * driver.findElement(By.id("UnassignedTab")).click();
+		 * setVolunteerInfoForSingleRole("Unassigned", "UnassignedTable", false);
+		 */
 	}
 
 	private void setVolunteerInfoForAllRoles() {
@@ -217,7 +221,8 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	 */
 	private void printOneRecord(String roleName, VolunteerDetail detail) {
 		try {
-			printer.printRecord(detail.getAsArray(currentEvent.getName(), roleName));
+			Object[] fields = detail.getAsArray(currentEvent.getName(), roleName);
+			printer.printRecord(fields);
 			volunteerFileCache.addNewLine(currentEvent.getName(), roleName, detail);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
