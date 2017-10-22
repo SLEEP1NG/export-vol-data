@@ -1,5 +1,5 @@
 package jb.model;
-
+import static jb.util.AlertWorkarounds.*;
 import org.openqa.selenium.*;
 
 public class NameUrlPair implements Comparable<NameUrlPair> {
@@ -8,7 +8,7 @@ public class NameUrlPair implements Comparable<NameUrlPair> {
 	private String url;
 
 	public NameUrlPair(WebElement webElement) {
-		name = webElement.getText().replace("(Hidden)", "").trim();
+		name = getText(webElement).replace("(Hidden)", "").trim();
 		url = webElement.getAttribute("href");
 	}
 

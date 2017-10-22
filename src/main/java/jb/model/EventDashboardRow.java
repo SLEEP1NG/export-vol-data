@@ -10,29 +10,29 @@ import org.openqa.selenium.*;
  * @author jeanne
  *
  */
-public class VolunteerDashboardRow extends AbstractDashboardRow {
+public class EventDashboardRow extends AbstractDashboardRow {
 
-	public VolunteerDashboardRow(List<WebElement> columns) {
-		super(columns, 2, 4);
+	public EventDashboardRow(List<WebElement> columns) {
+		super(columns, 5, 7);
 	}
 
 	// ------------------------------------------------------
 
 	/**
 	 * Checks the column headers have changed. If they have, need to update the
-	 * logic in this method or the column index in the constructor.
+	 * logic in this class.
 	 */
 	@Override
 	public void validateHeaderColumns() {
-		if (!"Total Volunteer Assignments".equals(getAssignedVolunteers())) {
+		if (!"Volunteers Assigned".equals(getAssignedVolunteers())) {
 			throw new IllegalStateException(
-					"The total volunteer assignments column has changed. "
-							+ "Please update VolunteerDashboardRow");
+					"The volunteer assignments column has changed. "
+							+ "Please update EventDashboardRow");
 		}
 		if (!"Unassigned Applicants".equals(getUnassignedVolunteers())) {
 			throw new IllegalStateException(
 					"The unassigned applicants column has changed. "
-							+ "Please update VolunteerDashboardRow");
+							+ "Please update EventDashboardRow");
 		}
 
 	}

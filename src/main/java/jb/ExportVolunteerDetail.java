@@ -89,12 +89,14 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		// the FIRST site doesn't work with the htmlunit or phantomjs drivers
 		Path gecko = Paths.get("geckodriver-0.19.0/geckodriver");
 		System.setProperty("webdriver.gecko.driver", gecko.toAbsolutePath().toString());
+		
 		driver = new FirefoxDriver();
-
+		
 		// this doesn't work - get prompts on every page in Firefox
 		// (ok because code proceeds despite alerts)
 		// https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/27
 		((JavascriptExecutor) driver).executeScript("window.alert = function(msg) { }");
+		((JavascriptExecutor) driver).executeScript("window.confirm = function(msg) { }");
 
 		tracker = new EventAndRoleTracker(driver);
 	}

@@ -19,7 +19,7 @@ import jb.model.*;
  * @author Jeanne
  *
  */
-// printlns ok because a command line program 
+// printlns ok because a command line program
 @SuppressWarnings("squid:S106")
 public class EventAndRoleTracker {
 
@@ -76,21 +76,33 @@ public class EventAndRoleTracker {
 	}
 
 	public List<NameUrlPair> getRemainingEvents() {
-		// Match URls of format: https://my.usfirst.org/VMS/Events/EventDetails.aspx?ID=27887
-		List<WebElement> links = driver.findElements(By.cssSelector("a[href*='Events']"));
-		System.out.println("# events: " + links.size());
-		return links.stream().map(NameUrlPair::new)
-				// remove completed events
-				.filter(e -> !isEventCompleted(e))
-				// sort
-				.sorted()
-				// convert to list
+		AlertWorkarounds helper = new AlertWorkarounds(driver);
+		helper.loadEventListDashboardPage();
+
+		// there are separate tables for FLL/FTC/FRC
+		List<WebElement> tableHeaders = driver.findElements(By.tagName("thead"));
+		tableHeaders.stream()
+				.map(t -> t.findElements(By.tagName("th")))
+				.forEach(h -> new EventDashboardRow(h).validateHeaderColumns() );
+
+		List<WebElement> rows = driver.findElements(By.tagName("tr"));
+		return rows.stream()
+				.map(r -> r.findElements(By.tagName("td")))
+				// skip blank rows (ex: headers)
+				.filter(l -> ! l.isEmpty())
+				.map(EventDashboardRow::new)
+				// skip events with no volunteers
+				.filter(EventDashboardRow::isAssignedVolunteersInRow)
+				// sort so events with most volunteers are first
+				// (so can kill program if it is taking too long and get most value)
+				.sorted((a, b) -> b.getNumberAssignedVolunteers() - a.getNumberAssignedVolunteers())
+				.map(EventDashboardRow::getNameUrlElement)
 				.collect(Collectors.toList());
 	}
 
 	public List<NameUrlPair> getRemainingRolesForEventByUrl(NameUrlPair event) {
 		driver.get(event.getUrl());
-		
+
 		// there are separate tables for key and non-key roles
 		List<WebElement> roleTables = driver.findElements(By.className("EventRoleTable"));
 		return roleTables.stream().flatMap(table -> getRemainingRolesForTableInEvent(event, table))
@@ -99,14 +111,14 @@ public class EventAndRoleTracker {
 				// turn back into list
 				.collect(Collectors.toList());
 	}
-	
+
 	private Stream<NameUrlPair> getRemainingRolesForTableInEvent(NameUrlPair event, WebElement table) {
 		// ex: https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
 		WebElement thead = table.findElement(By.tagName("thead"));
 		List<WebElement> headers = thead.findElements(By.tagName("th"));
 		VolunteerDashboardRow headerRow = new VolunteerDashboardRow(headers);
 		headerRow.validateHeaderColumns();
-		
+
 		WebElement tbody = table.findElement(By.tagName("tbody"));
 		List<WebElement> rows = tbody.findElements(By.tagName("tr"));
 		return rows.stream()
@@ -119,7 +131,7 @@ public class EventAndRoleTracker {
 				// remove completed
 				.filter(r -> !isEventRoleCompleted(event, r.getName()));
 	}
-	
+
 	public NameUrlPair getAnyRoleForEventByUrl(NameUrlPair event) {
 		driver.get(event.getUrl());
 
