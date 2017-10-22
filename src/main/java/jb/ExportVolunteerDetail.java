@@ -1,5 +1,5 @@
 package jb;
-
+import static jb.util.AlertWorkarounds.*;
 import static jb.util.Constants.*;
 
 import java.io.*;
@@ -208,7 +208,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		String commentText = "";
 
 		WebElement secondarySection = driver.findElement(By.className("secondarySection"));
-		String name = secondarySection.findElement(By.tagName("h2")).getText();
+		String name = getText(secondarySection.findElement(By.tagName("h2")));
 		List<WebElement> personalComments = driver.findElements(By.className("personalLabel"));
 
 		System.out.println("Processing " + name);
@@ -218,7 +218,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		if (includeRoleAssignment) {
 			driver.findElement(By.id("MainContent_RolePreferencesLinkButton")).click();
 			WebElement comments = getElementByIdAfterTimeout("MainContent_VolunteerComments");
-			commentText = comments.getText();
+			commentText = getText(comments);
 		}
 
 		return new VolunteerDetail(name, commentText, personalDetails);

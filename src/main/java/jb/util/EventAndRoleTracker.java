@@ -24,11 +24,13 @@ import jb.model.*;
 public class EventAndRoleTracker {
 
 	private WebDriver driver;
+	private AlertWorkarounds alertWorkaroundsHelper;
 	private List<String> completedEvents;
 	private List<String> completedEventRolePairs;
 
 	public EventAndRoleTracker(WebDriver driver) throws IOException {
 		this.driver = driver;
+		alertWorkaroundsHelper = new AlertWorkarounds(driver);
 		Path path = Paths.get(STATUS_TRACKER_FILE);
 		List<String> lines = Files.readAllLines(path);
 		setCompletedEvents(lines);
@@ -76,8 +78,7 @@ public class EventAndRoleTracker {
 	}
 
 	public List<NameUrlPair> getRemainingEvents() {
-		AlertWorkarounds helper = new AlertWorkarounds(driver);
-		helper.loadEventListDashboardPage();
+		alertWorkaroundsHelper.loadEventListDashboardPage();
 
 		// there are separate tables for FLL/FTC/FRC
 		List<WebElement> tableHeaders = driver.findElements(By.tagName("thead"));
@@ -101,7 +102,7 @@ public class EventAndRoleTracker {
 	}
 
 	public List<NameUrlPair> getRemainingRolesForEventByUrl(NameUrlPair event) {
-		driver.get(event.getUrl());
+		alertWorkaroundsHelper.loadEventDashboardPage(event.getUrl());
 
 		// there are separate tables for key and non-key roles
 		List<WebElement> roleTables = driver.findElements(By.className("EventRoleTable"));

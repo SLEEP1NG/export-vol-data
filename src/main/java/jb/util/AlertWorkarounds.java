@@ -14,7 +14,7 @@ import org.openqa.selenium.support.ui.*;
  */
 public class AlertWorkarounds {
 	
-	private static final int MAX_SECONDS_TO_WAIT = 30;
+	private static final int MAX_SECONDS_TO_WAIT = 60;
 
 	private WebDriver driver;
 
@@ -26,6 +26,12 @@ public class AlertWorkarounds {
 		driver.get(HOME_PAGE);
 		WebDriverWait wait = new WebDriverWait(driver, MAX_SECONDS_TO_WAIT);
 		wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h2[text()='Manage My Events']")));
+	}
+	
+	public void loadEventDashboardPage(String url) {
+		driver.get(url);
+		WebDriverWait wait = new WebDriverWait(driver, MAX_SECONDS_TO_WAIT);
+		wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h1[text()='Event Details']")));
 	}
 	
 	/**
