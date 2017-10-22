@@ -195,7 +195,6 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	}
 
 	private VolunteerDetail getVolunteerDetail(boolean includeRoleAssignment, NameUrlPair volunteerPair) {
-		VolunteerDetail detail;
 		driver.get(volunteerPair.getUrl());
 		String commentText = "";
 		if (includeRoleAssignment) {
@@ -212,8 +211,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 		List<String> personalDetails = personalComments.stream().map(WebElement::getText).collect(Collectors.toList());
 
-		detail = new VolunteerDetail(name, commentText, personalDetails);
-		return detail;
+		return new VolunteerDetail(name, commentText, personalDetails);
 	}
 
 	/*

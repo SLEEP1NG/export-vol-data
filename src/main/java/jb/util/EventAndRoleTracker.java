@@ -93,17 +93,29 @@ public class EventAndRoleTracker {
 		
 		// there are separate tables for key and non-key roles
 		List<WebElement> roleTables = driver.findElements(By.className("EventRoleTable"));
-		return roleTables.stream().flatMap(row -> getRemainingRolesForTableInEvent(event, row))
+		return roleTables.stream().flatMap(table -> getRemainingRolesForTableInEvent(event, table))
 				// sort
 				.sorted((a, b) -> a.getName().compareTo(b.getName()))
 				// turn back into list
 				.collect(Collectors.toList());
 	}
 	
-	private Stream<NameUrlPair> getRemainingRolesForTableInEvent(NameUrlPair event, WebElement row) {
+	private Stream<NameUrlPair> getRemainingRolesForTableInEvent(NameUrlPair event, WebElement table) {
 		// ex: https://my.usfirst.org/VMS/Roles/RoleDetails.aspx?ID=17335&RoleID=273
-		List<WebElement> roles = row.findElements(By.cssSelector("a[href*=RoleID]"));
-		return roles.stream().map(NameUrlPair::new)
+		WebElement thead = table.findElement(By.tagName("thead"));
+		List<WebElement> headers = thead.findElements(By.tagName("th"));
+		VolunteerDashboardRow headerRow = new VolunteerDashboardRow(headers);
+		headerRow.validateHeaderColumns();
+		
+		WebElement tbody = table.findElement(By.tagName("tbody"));
+		List<WebElement> rows = tbody.findElements(By.tagName("tr"));
+		return rows.stream()
+				.map(r -> r.findElements(By.tagName("td")))
+				.map(VolunteerDashboardRow::new)
+				// skip rows without any volunteers
+				.filter(VolunteerDashboardRow::isAssignedVolunteersInRow)
+				// get role name/url
+				.map(VolunteerDashboardRow::getNameUrlElement)
 				// remove completed
 				.filter(r -> !isEventRoleCompleted(event, r.getName()));
 	}
