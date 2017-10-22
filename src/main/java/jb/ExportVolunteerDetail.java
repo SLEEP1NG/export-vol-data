@@ -9,7 +9,6 @@ import java.util.stream.*;
 
 import org.apache.commons.csv.*;
 import org.openqa.selenium.*;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.firefox.*;
 import org.openqa.selenium.support.ui.*;
 
@@ -195,13 +194,16 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	}
 
 	private VolunteerDetail getVolunteerDetail(boolean includeRoleAssignment, NameUrlPair volunteerPair) {
+
 		driver.get(volunteerPair.getUrl());
-		String commentText = "";
-		if (includeRoleAssignment) {
-			driver.findElement(By.id("MainContent_RolePreferencesLinkButton")).click();
-			WebElement comments = getElementByIdAfterTimeout("MainContent_VolunteerComments");
-			commentText = comments.getText();
+
+		System.out.println(driver.getPageSource());
+		String pageSource = driver.getPageSource();
+		if (!pageSource.contains("<h2>" + volunteerPair.getName())) {
+			// TODO investigate
+			System.out.println("The code got stuck and is about to fail; need to figure out how to reset.");
 		}
+		String commentText = "";
 
 		WebElement secondarySection = driver.findElement(By.className("secondarySection"));
 		String name = secondarySection.findElement(By.tagName("h2")).getText();
@@ -210,6 +212,12 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		System.out.println("Processing " + name);
 
 		List<String> personalDetails = personalComments.stream().map(WebElement::getText).collect(Collectors.toList());
+
+		if (includeRoleAssignment) {
+			driver.findElement(By.id("MainContent_RolePreferencesLinkButton")).click();
+			WebElement comments = getElementByIdAfterTimeout("MainContent_VolunteerComments");
+			commentText = comments.getText();
+		}
 
 		return new VolunteerDetail(name, commentText, personalDetails);
 	}
