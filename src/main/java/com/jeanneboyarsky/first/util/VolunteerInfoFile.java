@@ -1,10 +1,10 @@
-package jb.util;
+package com.jeanneboyarsky.first.util;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-import jb.model.*;
+import com.jeanneboyarsky.first.model.*;
 
 /**
  * Cache data in file so don't duplicate event/role/name combinations and

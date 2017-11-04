@@ -1,4 +1,4 @@
-package jb.model;
+package com.jeanneboyarsky.first.model;
 import static org.hamcrest.MatcherAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -9,12 +9,14 @@ import org.hamcrest.*;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.*;
 
-public class EventDashboardRowTest {
+import com.jeanneboyarsky.first.model.*;
+
+public class VolunteerDashboardRowTest {
 
 	private static final String NAME = "test name";
 
 	private List<WebElement> elements;
-
+	
 	@BeforeEach
 	void createList() {
 		elements = new ArrayList<>();
@@ -38,26 +40,18 @@ public class EventDashboardRowTest {
 
 	private void addElements(String assignedColumn, String unassignedColumn) {
 		addNameElement();
-		addElement("start date");
-		addElement("# days");
-		addElement("program");
-		addElement("event target");
+		addElement("role target");
 		addElement(assignedColumn);
 		addElement("tentative");
 		addElement(unassignedColumn);
-		addElement("# teams");
 	}
 	
 	private void addHeaderElements(String assignedColumn, String unassignedColumn) {
 		addElement("name/url");
-		addElement("start date");
-		addElement("# days");
-		addElement("program");
-		addElement("event target");
+		addElement("role target");
 		addElement(assignedColumn);
 		addElement("tentative");
 		addElement(unassignedColumn);
-		addElement("# teams");
 	}
 
 	// -----------------------------------------------
@@ -65,7 +59,7 @@ public class EventDashboardRowTest {
 	void withAssignedVolunteer() {
 		addElements("1", "0");
 
-		EventDashboardRow actual = new EventDashboardRow(elements);
+		VolunteerDashboardRow actual = new VolunteerDashboardRow(elements);
 		assertEquals(NAME, actual.getNameUrlElement().getName(), "name");
 		assertEquals(1, actual.getNumberAssignedVolunteers(), "# assigned");
 		assertEquals(0, actual.getNumberUnassignedVolunteers(), "# unassigned");
@@ -76,7 +70,7 @@ public class EventDashboardRowTest {
 	void withUnassignedVolunteer() {
 		addElements("0", "1");
 
-		EventDashboardRow actual = new EventDashboardRow(elements);
+		VolunteerDashboardRow actual = new VolunteerDashboardRow(elements);
 		assertEquals(NAME, actual.getNameUrlElement().getName(), "name");
 		assertEquals(0, actual.getNumberAssignedVolunteers(), "# assigned");
 		assertEquals(1, actual.getNumberUnassignedVolunteers(), "# unassigned");
@@ -87,7 +81,7 @@ public class EventDashboardRowTest {
 	void withNewUnassignedVolunteers() {
 		addElements("0", "4 (2 new)");
 
-		EventDashboardRow actual = new EventDashboardRow(elements);
+		VolunteerDashboardRow actual = new VolunteerDashboardRow(elements);
 		assertEquals(NAME, actual.getNameUrlElement().getName(), "name");
 		assertEquals(0, actual.getNumberAssignedVolunteers(), "# assigned");
 		assertEquals(4, actual.getNumberUnassignedVolunteers(), "# unassigned");
@@ -98,7 +92,7 @@ public class EventDashboardRowTest {
 	void withNoVolunteers() {
 		addElements("0", "0");
 
-		EventDashboardRow actual = new EventDashboardRow(elements);
+		VolunteerDashboardRow actual = new VolunteerDashboardRow(elements);
 		assertEquals(NAME, actual.getNameUrlElement().getName(), "name");
 		assertEquals(0, actual.getNumberAssignedVolunteers(), "# assigned");
 		assertEquals(0, actual.getNumberUnassignedVolunteers(), "# unassigned");
@@ -108,24 +102,24 @@ public class EventDashboardRowTest {
 	// -----------------------------------------------
 	@Test
 	void headerColumnsSame() {
-		addHeaderElements("Volunteers\n  Assigned  ", "Unassigned\n  Applicants  ");
-		EventDashboardRow actual = new EventDashboardRow(elements);
+		addHeaderElements("Total Volunteer Assignments", "Unassigned\nApplicants");
+		VolunteerDashboardRow actual = new VolunteerDashboardRow(elements);
 		actual.validateHeaderColumns();
 	}
 
 	@Test
 	void changeInAssignmentTotalColumn() {
-		addHeaderElements("Other Volunteer Assignments", "Unassigned\n  Applicants");
-		EventDashboardRow row = new EventDashboardRow(elements);
+		addHeaderElements("Other Volunteer Assignments", "Unassigned\nApplicants");
+		VolunteerDashboardRow row = new VolunteerDashboardRow(elements);
 		IllegalStateException actual = assertThrows(IllegalStateException.class,
 				() -> row.validateHeaderColumns());
-		assertThat(actual.getMessage(), Matchers.startsWith("The volunteer assignments column has changed."));
+		assertThat(actual.getMessage(), Matchers.startsWith("The total volunteer assignments column has changed."));
 	}
 
 	@Test
 	void changeInUnassignedTotalColumn() {
-		addHeaderElements("Volunteers\n  Assigned", "Other\n  Applicants");
-		EventDashboardRow row = new EventDashboardRow(elements);
+		addHeaderElements("Total Volunteer Assignments", "Other\nApplicants");
+		VolunteerDashboardRow row = new VolunteerDashboardRow(elements);
 		IllegalStateException actual = assertThrows(IllegalStateException.class,
 				() -> row.validateHeaderColumns());
 		assertThat(actual.getMessage(), Matchers.startsWith("The unassigned applicants column has changed."));

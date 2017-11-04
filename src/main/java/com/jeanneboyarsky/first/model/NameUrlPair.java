@@ -1,5 +1,6 @@
-package jb.model;
-import static jb.util.AlertWorkarounds.*;
+package com.jeanneboyarsky.first.model;
+import static com.jeanneboyarsky.first.util.AlertWorkarounds.*;
+
 import org.openqa.selenium.*;
 
 public class NameUrlPair implements Comparable<NameUrlPair> {

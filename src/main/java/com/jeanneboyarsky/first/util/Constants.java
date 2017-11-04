@@ -1,4 +1,4 @@
-package jb.util;
+package com.jeanneboyarsky.first.util;
 
 public interface Constants {
 

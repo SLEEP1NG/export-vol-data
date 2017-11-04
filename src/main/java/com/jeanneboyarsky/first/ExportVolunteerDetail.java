@@ -1,6 +1,6 @@
-package jb;
-import static jb.util.AlertWorkarounds.*;
-import static jb.util.Constants.*;
+package com.jeanneboyarsky.first;
+import static com.jeanneboyarsky.first.util.AlertWorkarounds.*;
+import static com.jeanneboyarsky.first.util.Constants.*;
 
 import java.io.*;
 import java.nio.file.*;
@@ -12,8 +12,8 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.*;
 import org.openqa.selenium.support.ui.*;
 
-import jb.model.*;
-import jb.util.*;
+import com.jeanneboyarsky.first.model.*;
+import com.jeanneboyarsky.first.util.*;
 
 /**
  * Screen scrapes info not in the export (FIRST experience field). Assumes no

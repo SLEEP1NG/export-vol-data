@@ -1,4 +1,4 @@
-package jb.util;
+package com.jeanneboyarsky.first.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -6,7 +6,8 @@ import java.util.*;
 
 import org.junit.jupiter.api.*;
 
-import jb.model.*;
+import com.jeanneboyarsky.first.model.*;
+import com.jeanneboyarsky.first.util.*;
 
 public class VolunteerInfoFileTest {
 

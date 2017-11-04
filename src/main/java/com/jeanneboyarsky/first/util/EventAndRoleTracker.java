@@ -1,6 +1,6 @@
-package jb.util;
+package com.jeanneboyarsky.first.util;
 
-import static jb.util.Constants.*;
+import static com.jeanneboyarsky.first.util.Constants.*;
 
 import java.io.*;
 import java.nio.file.*;
@@ -9,7 +9,7 @@ import java.util.stream.*;
 
 import org.openqa.selenium.*;
 
-import jb.model.*;
+import com.jeanneboyarsky.first.model.*;
 
 /**
  * While I only am VC for one event, Norm is for many. This class keeps track of

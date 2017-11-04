@@ -1,4 +1,4 @@
-package jb.model;
+package com.jeanneboyarsky.first.model;
 
 import java.util.*;
 import java.util.concurrent.*;

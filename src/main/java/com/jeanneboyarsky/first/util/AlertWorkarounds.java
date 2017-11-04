@@ -1,6 +1,6 @@
-package jb.util;
+package com.jeanneboyarsky.first.util;
 
-import static jb.util.Constants.*;
+import static com.jeanneboyarsky.first.util.Constants.*;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.*;
