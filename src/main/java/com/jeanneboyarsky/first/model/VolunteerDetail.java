@@ -13,14 +13,15 @@ import java.util.stream.*;
 public class VolunteerDetail {
 
 	private String name;
-		private String age;
+	private String age;
 	private String yearsOfService;
 	private String gender;
+	private String shirt;
 	private String firstExperienceDescription;
 	private String rolePreferenceComment;
 
 	enum PersonalDetailFieldNameEnum {
-		AGE, YEARS_OF_SERVICE, GENDER, OTHER_LABEL, NO_LABEL;
+		AGE, YEARS_OF_SERVICE, GENDER, SHIRT, OTHER_LABEL, NO_LABEL;
 		public static PersonalDetailFieldNameEnum getEnumForLabelPrefix(String prefix) {
 			PersonalDetailFieldNameEnum result;
 			if (prefix.startsWith("Age:")) {
@@ -29,6 +30,8 @@ public class VolunteerDetail {
 				result = YEARS_OF_SERVICE;
 			} else if (prefix.startsWith("Gender:")) {
 				result = GENDER;
+			} else if (prefix.startsWith("Shirt:")) {
+				result = SHIRT;
 			} else if (isIgnoredLabel(prefix)) {
 				result = OTHER_LABEL;
 			} else {
@@ -38,32 +41,33 @@ public class VolunteerDetail {
 		}
 
 		private static boolean isIgnoredLabel(String prefix) {
-			return Stream.of("Phone Number:", "Email:", "Contact Name:", "Phone:",
-					"Shirt:", "Address:").anyMatch(prefix::startsWith);
+			return Stream.of("Phone Number:", "Email:", "Contact Name:", "Phone:", "Address:")
+					.anyMatch(prefix::startsWith);
 		}
 	}
-	
+
 	public VolunteerDetail(String name, String rolePreferenceComment, List<String> personalDetails) {
 		this.name = name;
 		this.rolePreferenceComment = rolePreferenceComment;
 
 		setPersonalInfo(personalDetails);
 	}
-	
-	public VolunteerDetail(String name, String age, String yearsOfService, String gender,
+
+	public VolunteerDetail(String name, String age, String yearsOfService, String gender, String shirt,
 			String firstExperienceDescription, String rolePreferenceComment) {
 		super();
 		this.name = name;
 		this.age = age;
 		this.yearsOfService = yearsOfService;
 		this.gender = gender;
+		this.shirt = shirt;
 		this.firstExperienceDescription = firstExperienceDescription;
 		this.rolePreferenceComment = rolePreferenceComment;
 	}
 
 	/**
-	 * Yech. This method is a hack because the FIRST experience field isn't
-	 * exported and doesn't have a label
+	 * Yech. This method is a hack because the FIRST experience field isn't exported
+	 * and doesn't have a label
 	 * 
 	 * @param personalDetails
 	 */
@@ -104,6 +108,9 @@ public class VolunteerDetail {
 		case GENDER:
 			gender = value;
 			break;
+		case SHIRT:
+			shirt = value;
+			break;
 		case NO_LABEL:
 		case OTHER_LABEL:
 			// intentionally set nothing
@@ -121,21 +128,24 @@ public class VolunteerDetail {
 		result.add(nullSafe(age));
 		result.add(nullSafe(yearsOfService));
 		result.add(nullSafe(gender));
+		result.add(nullSafe(shirt));
 		result.add(nullSafe(firstExperienceDescription));
 		result.add(nullSafe(rolePreferenceComment));
 		return result.toArray(new String[0]);
 	}
-	
+
 	public static VolunteerDetail createFromCsvArray(String... fields) {
 		String name = getField(fields, 0);
 		String age = getField(fields, 1);
 		String yearsOfService = getField(fields, 2);
 		String gender = getField(fields, 3);
-		String firstExperienceDescription = getField(fields, 4);
-		String rolePreferenceComment = getField(fields, 5);
-		return new VolunteerDetail(name, age, yearsOfService, gender, firstExperienceDescription, rolePreferenceComment);
+		String shirt = getField(fields, 4);
+		String firstExperienceDescription = getField(fields, 5);
+		String rolePreferenceComment = getField(fields, 6);
+		return new VolunteerDetail(name, age, yearsOfService, gender, shirt, firstExperienceDescription,
+				rolePreferenceComment);
 	}
-	
+
 	private static String getField(String[] fields, int index) {
 		if (fields.length <= index) {
 			return "";
@@ -147,7 +157,7 @@ public class VolunteerDetail {
 	private String nullSafe(String text) {
 		return (text == null) ? "" : text;
 	}
-	
+
 	public String getName() {
 		return name;
 	}

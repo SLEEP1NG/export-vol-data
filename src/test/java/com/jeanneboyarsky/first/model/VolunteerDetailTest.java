@@ -6,8 +6,6 @@ import java.util.*;
 
 import org.junit.jupiter.api.*;
 
-import com.jeanneboyarsky.first.model.*;
-
 public class VolunteerDetailTest {
 
 	private Object[] actual;
@@ -16,14 +14,14 @@ public class VolunteerDetailTest {
 	public void name() {
 		VolunteerDetail detail = new VolunteerDetail("name", null, new ArrayList<String>());
 		actual = detail.getAsArray("event", "role");
-		assertArrayForCsv("event", "role", "name", "", "", "", "", "");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "", "");
 	}
 
 	@Test
 	public void nameAndRolePreferenceComment() {
 		VolunteerDetail detail = new VolunteerDetail("name", "role", new ArrayList<String>());
 		actual = detail.getAsArray("event", "role");
-		assertArrayForCsv("event", "role", "name", "", "", "", "", "role");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "", "role");
 	}
 
 	@Test
@@ -35,7 +33,7 @@ public class VolunteerDetailTest {
 
 		VolunteerDetail detail = new VolunteerDetail("name", "role", personalInfo);
 		actual = detail.getAsArray("event", "role");
-		assertArrayForCsv("event", "role", "name", "34", "10", "Male", "My FIRST experience", "role");
+		assertArrayForCsv("event", "role", "name", "34", "10", "Male", "M", "My FIRST experience", "role");
 	}
 
 	// ---------------------------------------------------
@@ -44,22 +42,23 @@ public class VolunteerDetailTest {
 	public void createFromArrayByNameOnly() {
 		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name");
 		actual = detailFromArray.getAsArray("event", "role");
-		assertArrayForCsv("event", "role", "name", "", "", "", "", "");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "", "");
 	}
 
 	@Test
 	public void createFromArrayWithRolePreference() {
-		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name", "", "", "", "", "role");
+		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name", "", "", "", "",
+				"", "role");
 		actual = detailFromArray.getAsArray("event", "role");
-		assertArrayForCsv("event", "role", "name", "", "", "", "", "role");
+		assertArrayForCsv("event", "role", "name", "", "", "", "", "", "role");
 	}
 
 	@Test
 	public void createFromArrayWithPersonalInfoAndQuotes() {
-		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name", "34", "10", "Male",
+		VolunteerDetail detailFromArray = VolunteerDetail.createFromCsvArray("name", "34", "10", "Male", "S",
 				"\"My FIRST Experience\"", "role");
 		actual = detailFromArray.getAsArray("event", "role");
-		assertArrayForCsv("event", "role", "name", "34", "10", "Male", "My FIRST Experience", "role");
+		assertArrayForCsv("event", "role", "name", "34", "10", "Male", "S", "My FIRST Experience", "role");
 	}
 
 	// ---------------------------------------------------
