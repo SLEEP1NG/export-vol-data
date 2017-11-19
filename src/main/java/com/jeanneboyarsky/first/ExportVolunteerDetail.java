@@ -1,4 +1,5 @@
 package com.jeanneboyarsky.first;
+
 import static com.jeanneboyarsky.first.util.AlertWorkarounds.*;
 import static com.jeanneboyarsky.first.util.Constants.*;
 
@@ -31,8 +32,9 @@ import com.jeanneboyarsky.first.util.*;
 // printlns ok because a command line program
 @SuppressWarnings("squid:S106")
 public class ExportVolunteerDetail implements AutoCloseable {
-	
+
 	private static final String CHROME_DRIVER_DIRECTORY = "chromedriver-2-23";
+	private static final boolean HEADLESS = false;
 
 	private WebDriver driver;
 	private CSVPrinter printer;
@@ -89,11 +91,17 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		this.volunteerFileCache = volunteerFileCache;
 
 		// the FIRST site doesn't work with the htmlunit or phantomjs drivers
-		Path gecko = Paths.get(CHROME_DRIVER_DIRECTORY + "/chromedriver");
-		System.setProperty("webdriver.chrome.driver", gecko.toAbsolutePath().toString());
+		// it is also slow/flakey in firefox
+		Path chrome = Paths.get(CHROME_DRIVER_DIRECTORY + "/chromedriver");
+		System.setProperty("webdriver.chrome.driver", chrome.toAbsolutePath().toString());
+
+		ChromeOptions chromeOptions = new ChromeOptions();
+		if (HEADLESS) {
+			chromeOptions.addArguments("--headless");
+		}
 		
-		driver = new ChromeDriver();
-		
+		driver = new ChromeDriver(chromeOptions);
+
 		// https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/27
 		((JavascriptExecutor) driver).executeScript("window.alert = function(msg) { }");
 		((JavascriptExecutor) driver).executeScript("window.confirm = function(msg) { }");
