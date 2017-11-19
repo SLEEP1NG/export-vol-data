@@ -24,17 +24,18 @@ public class EventDashboardRow extends AbstractDashboardRow {
 	 */
 	@Override
 	public void validateHeaderColumns() {
-		if (!"Volunteers Assigned".equals(getAssignedVolunteers())) {
+		String assigned = getAssignedVolunteers();
+		if (!"VolunteersAssigned".equals(assigned)) {
 			throw new IllegalStateException(
-					"The volunteer assignments column has changed. "
-							+ "Please update EventDashboardRow");
+					"The volunteer assignments column has changed. It is now showing as " + assigned
+							+ ". Please update EventDashboardRow");
 		}
-		if (!"Unassigned Applicants".equals(getUnassignedVolunteers())) {
+		String unassigned = getUnassignedVolunteers();
+		if (!"UnassignedApplicants".equals(unassigned)) {
 			throw new IllegalStateException(
-					"The unassigned applicants column has changed. "
-							+ "Please update EventDashboardRow");
+					"The unassigned applicants column has changed. It is now showing as " + unassigned
+							+ ". Please update EventDashboardRow");
 		}
-
 	}
 
 }

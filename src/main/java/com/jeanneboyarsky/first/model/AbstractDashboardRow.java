@@ -53,7 +53,7 @@ public abstract class AbstractDashboardRow {
 	}
 	
 	private String normalizeWhitespace(String value) {
-		return value.replaceAll("\\s+", " ").trim();
+		return value.replaceAll("\\s+", "").trim();
 	}
 
 	public int getNumberUnassignedVolunteers() {

@@ -24,17 +24,18 @@ public class VolunteerDashboardRow extends AbstractDashboardRow {
 	 */
 	@Override
 	public void validateHeaderColumns() {
-		if (!"Total Volunteer Assignments".equals(getAssignedVolunteers())) {
+		String assigned = getAssignedVolunteers();
+		if (!"TotalVolunteerAssignments".equals(assigned)) {
 			throw new IllegalStateException(
-					"The total volunteer assignments column has changed. "
-							+ "Please update VolunteerDashboardRow");
+					"The total volunteer assignments column has changed. It is now showing as " + assigned
+							+ ". Please update VolunteerDashboardRow");
 		}
-		if (!"Unassigned Applicants".equals(getUnassignedVolunteers())) {
+		String unassigned = getUnassignedVolunteers();
+		if (!"UnassignedApplicants".equals(unassigned)) {
 			throw new IllegalStateException(
-					"The unassigned applicants column has changed. "
-							+ "Please update VolunteerDashboardRow");
+					"The unassigned applicants column has changed. It is now showing as " + unassigned
+							+ ". Please update VolunteerDashboardRow");
 		}
-
 	}
 
 }
