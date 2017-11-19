@@ -9,7 +9,7 @@ import java.util.stream.*;
 
 import org.apache.commons.csv.*;
 import org.openqa.selenium.*;
-import org.openqa.selenium.firefox.*;
+import org.openqa.selenium.chrome.*;
 import org.openqa.selenium.support.ui.*;
 
 import com.jeanneboyarsky.first.model.*;
@@ -31,6 +31,8 @@ import com.jeanneboyarsky.first.util.*;
 // printlns ok because a command line program
 @SuppressWarnings("squid:S106")
 public class ExportVolunteerDetail implements AutoCloseable {
+	
+	private static final String CHROME_DRIVER_DIRECTORY = "chromedriver-2-23";
 
 	private WebDriver driver;
 	private CSVPrinter printer;
@@ -87,13 +89,11 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		this.volunteerFileCache = volunteerFileCache;
 
 		// the FIRST site doesn't work with the htmlunit or phantomjs drivers
-		Path gecko = Paths.get("geckodriver-0.19.0/geckodriver");
-		System.setProperty("webdriver.gecko.driver", gecko.toAbsolutePath().toString());
+		Path gecko = Paths.get(CHROME_DRIVER_DIRECTORY + "/chromedriver");
+		System.setProperty("webdriver.chrome.driver", gecko.toAbsolutePath().toString());
 		
-		driver = new FirefoxDriver();
+		driver = new ChromeDriver();
 		
-		// this doesn't work - get prompts on every page in Firefox
-		// (ok because code proceeds despite alerts)
 		// https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/27
 		((JavascriptExecutor) driver).executeScript("window.alert = function(msg) { }");
 		((JavascriptExecutor) driver).executeScript("window.confirm = function(msg) { }");
@@ -199,12 +199,6 @@ public class ExportVolunteerDetail implements AutoCloseable {
 
 		driver.get(volunteerPair.getUrl());
 
-		System.out.println(driver.getPageSource());
-		String pageSource = driver.getPageSource();
-		if (!pageSource.contains("<h2>" + volunteerPair.getName())) {
-			// TODO investigate
-			System.out.println("The code got stuck and is about to fail; need to figure out how to reset.");
-		}
 		String commentText = "";
 
 		WebElement secondarySection = driver.findElement(By.className("secondarySection"));
