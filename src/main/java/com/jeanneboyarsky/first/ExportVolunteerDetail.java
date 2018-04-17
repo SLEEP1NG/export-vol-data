@@ -33,7 +33,7 @@ import com.jeanneboyarsky.first.util.*;
 @SuppressWarnings("squid:S106")
 public class ExportVolunteerDetail implements AutoCloseable {
 
-	private static final String CHROME_DRIVER_DIRECTORY = "chromedriver-2-23";
+	private static final String CHROME_DRIVER_DIRECTORY = "chromedriver-2-37";
 	private static final boolean HEADLESS = false;
 
 	private WebDriver driver;
@@ -48,7 +48,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
 			System.out.println("Pass two parameters: email and password");
-			System.out.println("ex: jb.ExportVolunteerDetail email password");
+			System.out.println("ex: com.jeanneboyarsky.first.ExportVolunteerDetail email password");
 			System.exit(1);
 		}
 
@@ -93,6 +93,7 @@ public class ExportVolunteerDetail implements AutoCloseable {
 		// the FIRST site doesn't work with the htmlunit or phantomjs drivers
 		// it is also slow/flakey in firefox
 		Path chrome = Paths.get(CHROME_DRIVER_DIRECTORY + "/chromedriver");
+		chrome.toFile().setExecutable(true);
 		System.setProperty("webdriver.chrome.driver", chrome.toAbsolutePath().toString());
 
 		ChromeOptions chromeOptions = new ChromeOptions();
